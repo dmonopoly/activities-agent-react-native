@@ -1,4 +1,5 @@
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { colors } from '@/constants/colors';
 
 interface SuggestionChipsProps {
   onSelect: (suggestion: string) => void;
@@ -13,22 +14,24 @@ const suggestions = [
 
 export function SuggestionChips({ onSelect }: SuggestionChipsProps) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-      className="mb-4"
-    >
+    <View className="flex-row flex-wrap justify-center gap-2 px-4 mb-6">
       {suggestions.map((suggestion, index) => (
         <Pressable
           key={index}
           onPress={() => onSelect(suggestion)}
-          className="bg-rose-50 border border-rose-200 rounded-full px-4 py-2 active:bg-rose-100"
+          className="bg-white border border-gray-200 rounded-full px-4 py-2.5 active:bg-rose-50 active:border-rose-300"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
         >
-          <Text className="text-rose-600 text-sm font-medium">{suggestion}</Text>
+          <Text className="text-gray-700 text-sm font-medium">{suggestion}</Text>
         </Pressable>
       ))}
-    </ScrollView>
+    </View>
   );
 }
 

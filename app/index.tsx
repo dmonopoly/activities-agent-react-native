@@ -92,14 +92,16 @@ export default function ChatScreen() {
       {!hasMessages ? (
         // Empty state - centered content
         <View className="flex-1 justify-center px-4">
-          <Text className="text-3xl font-bold text-gray-900 text-center mb-2">
-            What can I help with?
-          </Text>
-          <Text className="text-gray-500 text-center mb-8">
-            Ask me about activities, events, and things to do
-          </Text>
+          <View className="items-center mb-8">
+            <Text className="text-3xl font-bold text-gray-900 text-center mb-2">
+              What can I help with?
+            </Text>
+            <Text className="text-base text-gray-500 text-center">
+              Ask me about activities, events, and things to do
+            </Text>
+          </View>
           <SuggestionChips onSelect={handleChipSelect} />
-          <View className="mt-4">
+          <View className="mt-6">
             <ChatInput onSend={handleSend} disabled={isLoading} />
           </View>
         </View>
