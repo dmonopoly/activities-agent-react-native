@@ -12,22 +12,18 @@ import { Picker } from '@react-native-picker/picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '@/services/api';
-import { storage } from '@/services/storage';
-import type { UserPreferences } from '@/types';
+import { useUser } from '@/contexts/UserContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { InterestChip } from '@/components/preferences/InterestChip';
 import { colors } from '@/constants/colors';
 
 export default function PreferencesScreen() {
   const insets = useSafeAreaInsets();
+  const { userId, allUsers, isLoading: isUserLoading, setUserId } = useUser();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPrefs, setIsLoadingPrefs] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // User selection
-  const [allUsers, setAllUsers] = useState<string[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   // Preferences form
   const [location, setLocation] = useState('');
@@ -36,50 +32,31 @@ export default function PreferencesScreen() {
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
 
+  // Load preferences when userId changes
   useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  const loadInitialData = async () => {
-    try {
-      setIsLoading(true);
-      const [users, currentUserId] = await Promise.all([
-        api.getAllUsers(),
-        storage.getUserId(),
-      ]);
-
-      setAllUsers(users);
-
-      // Use stored userId or first available user
-      const initialUserId = currentUserId || (users.length > 0 ? users[0] : '');
-      if (initialUserId) {
-        setSelectedUserId(initialUserId);
-        await loadUserPreferences(initialUserId);
-      }
-    } catch (error) {
-      console.error('Failed to load initial data:', error);
-    } finally {
-      setIsLoading(false);
+    if (userId) {
+      loadUserPreferences(userId);
     }
-  };
+  }, [userId]);
 
-  const loadUserPreferences = async (userId: string) => {
+  const loadUserPreferences = async (id: string) => {
     try {
-      const prefs = await api.getPreferences(userId);
+      setIsLoadingPrefs(true);
+      const prefs = await api.getPreferences(id);
       setLocation(prefs.location || '');
       setInterests(prefs.interests || []);
       setBudgetMin(prefs.budget_min?.toString() || '');
       setBudgetMax(prefs.budget_max?.toString() || '');
     } catch (error) {
       console.error('Failed to load preferences:', error);
+    } finally {
+      setIsLoadingPrefs(false);
     }
   };
 
-  const handleUserChange = useCallback(async (userId: string) => {
-    setSelectedUserId(userId);
-    await storage.setUserId(userId);
-    await loadUserPreferences(userId);
-  }, []);
+  const handleUserChange = useCallback(async (newUserId: string) => {
+    await setUserId(newUserId);
+  }, [setUserId]);
 
   const handleAddInterest = useCallback(() => {
     const trimmed = newInterest.trim();
@@ -97,13 +74,13 @@ export default function PreferencesScreen() {
   );
 
   const handleSave = useCallback(async () => {
-    if (!selectedUserId) return;
+    if (!userId) return;
 
     try {
       setIsSaving(true);
       setSaveSuccess(false);
 
-      await api.updatePreferences(selectedUserId, {
+      await api.updatePreferences(userId, {
         location: location || undefined,
         interests,
         budget_min: budgetMin ? parseFloat(budgetMin) : undefined,
@@ -118,9 +95,9 @@ export default function PreferencesScreen() {
     } finally {
       setIsSaving(false);
     }
-  }, [selectedUserId, location, interests, budgetMin, budgetMax]);
+  }, [userId, location, interests, budgetMin, budgetMax]);
 
-  if (isLoading) {
+  if (isUserLoading) {
     return <LoadingSpinner />;
   }
 
@@ -138,7 +115,7 @@ export default function PreferencesScreen() {
           </Text>
           <View className="border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
             <Picker
-              selectedValue={selectedUserId}
+              selectedValue={userId}
               onValueChange={handleUserChange}
               style={{
                 height: Platform.OS === 'ios' ? 150 : 50,
@@ -152,116 +129,123 @@ export default function PreferencesScreen() {
           </View>
         </View>
 
-        {/* Location */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-gray-900 mb-2">
-            Location
-          </Text>
-          <TextInput
-            value={location}
-            onChangeText={setLocation}
-            placeholder="e.g., San Francisco, CA"
-            placeholderTextColor={colors.gray400}
-            className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
-          />
-        </View>
-
-        {/* Interests */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-gray-900 mb-2">
-            Interests
-          </Text>
-
-          {/* Interest Chips */}
-          {interests.length > 0 && (
-            <View className="flex-row flex-wrap mb-3">
-              {interests.map((interest, index) => (
-                <InterestChip
-                  key={index}
-                  interest={interest}
-                  onRemove={() => handleRemoveInterest(index)}
-                />
-              ))}
-            </View>
-          )}
-
-          {/* Add Interest Input */}
-          <View className="flex-row gap-2">
-            <TextInput
-              value={newInterest}
-              onChangeText={setNewInterest}
-              onSubmitEditing={handleAddInterest}
-              placeholder="Add an interest..."
-              placeholderTextColor={colors.gray400}
-              className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
-            />
-            <Pressable
-              onPress={handleAddInterest}
-              className="bg-rose-500 rounded-xl px-4 items-center justify-center active:bg-rose-600"
-            >
-              <Ionicons name="add" size={24} color={colors.white} />
-            </Pressable>
+        {isLoadingPrefs ? (
+          <View className="py-8">
+            <LoadingSpinner size="small" />
           </View>
-        </View>
-
-        {/* Budget */}
-        <View className="mb-8">
-          <Text className="text-base font-semibold text-gray-900 mb-2">
-            Budget Range
-          </Text>
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <Text className="text-xs text-gray-500 mb-1">Minimum ($)</Text>
-              <TextInput
-                value={budgetMin}
-                onChangeText={setBudgetMin}
-                placeholder="0"
-                placeholderTextColor={colors.gray400}
-                keyboardType="numeric"
-                className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="text-xs text-gray-500 mb-1">Maximum ($)</Text>
-              <TextInput
-                value={budgetMax}
-                onChangeText={setBudgetMax}
-                placeholder="100"
-                placeholderTextColor={colors.gray400}
-                keyboardType="numeric"
-                className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Save Button */}
-        <Pressable
-          onPress={handleSave}
-          disabled={isSaving}
-          className={`rounded-xl py-4 items-center ${
-            saveSuccess
-              ? 'bg-green-500'
-              : isSaving
-              ? 'bg-gray-300'
-              : 'bg-rose-500 active:bg-rose-600'
-          }`}
-        >
-          {saveSuccess ? (
-            <View className="flex-row items-center">
-              <Ionicons name="checkmark-circle" size={20} color={colors.white} />
-              <Text className="text-white font-semibold text-base ml-2">
-                Saved!
+        ) : (
+          <>
+            {/* Location */}
+            <View className="mb-6">
+              <Text className="text-base font-semibold text-gray-900 mb-2">
+                Location
               </Text>
+              <TextInput
+                value={location}
+                onChangeText={setLocation}
+                placeholder="e.g., San Francisco, CA"
+                placeholderTextColor={colors.gray400}
+                className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+              />
             </View>
-          ) : (
-            <Text className="text-white font-semibold text-base">
-              {isSaving ? 'Saving...' : 'Save Preferences'}
-            </Text>
-          )}
-        </Pressable>
+
+            {/* Interests */}
+            <View className="mb-6">
+              <Text className="text-base font-semibold text-gray-900 mb-2">
+                Interests
+              </Text>
+
+              {/* Interest Chips */}
+              {interests.length > 0 && (
+                <View className="flex-row flex-wrap mb-3">
+                  {interests.map((interest, index) => (
+                    <InterestChip
+                      key={index}
+                      interest={interest}
+                      onRemove={() => handleRemoveInterest(index)}
+                    />
+                  ))}
+                </View>
+              )}
+
+              {/* Add Interest Input */}
+              <View className="flex-row gap-2">
+                <TextInput
+                  value={newInterest}
+                  onChangeText={setNewInterest}
+                  onSubmitEditing={handleAddInterest}
+                  placeholder="Add an interest..."
+                  placeholderTextColor={colors.gray400}
+                  className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+                />
+                <Pressable
+                  onPress={handleAddInterest}
+                  className="bg-rose-500 rounded-xl px-4 items-center justify-center active:bg-rose-600"
+                >
+                  <Ionicons name="add" size={24} color={colors.white} />
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Budget */}
+            <View className="mb-8">
+              <Text className="text-base font-semibold text-gray-900 mb-2">
+                Budget Range
+              </Text>
+              <View className="flex-row gap-3">
+                <View className="flex-1">
+                  <Text className="text-xs text-gray-500 mb-1">Minimum ($)</Text>
+                  <TextInput
+                    value={budgetMin}
+                    onChangeText={setBudgetMin}
+                    placeholder="0"
+                    placeholderTextColor={colors.gray400}
+                    keyboardType="numeric"
+                    className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs text-gray-500 mb-1">Maximum ($)</Text>
+                  <TextInput
+                    value={budgetMax}
+                    onChangeText={setBudgetMax}
+                    placeholder="100"
+                    placeholderTextColor={colors.gray400}
+                    keyboardType="numeric"
+                    className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Save Button */}
+            <Pressable
+              onPress={handleSave}
+              disabled={isSaving}
+              className={`rounded-xl py-4 items-center ${
+                saveSuccess
+                  ? 'bg-green-500'
+                  : isSaving
+                  ? 'bg-gray-300'
+                  : 'bg-rose-500 active:bg-rose-600'
+              }`}
+            >
+              {saveSuccess ? (
+                <View className="flex-row items-center">
+                  <Ionicons name="checkmark-circle" size={20} color={colors.white} />
+                  <Text className="text-white font-semibold text-base ml-2">
+                    Saved!
+                  </Text>
+                </View>
+              ) : (
+                <Text className="text-white font-semibold text-base">
+                  {isSaving ? 'Saving...' : 'Save Preferences'}
+                </Text>
+              )}
+            </Pressable>
+          </>
+        )}
       </View>
     </ScrollView>
   );
 }
-

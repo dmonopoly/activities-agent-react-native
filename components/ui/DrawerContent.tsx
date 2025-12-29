@@ -2,11 +2,8 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUser } from '@/contexts/UserContext';
 import { colors } from '@/constants/colors';
-
-interface DrawerContentProps {
-  userId?: string;
-}
 
 interface NavItem {
   label: string;
@@ -20,10 +17,11 @@ const navItems: NavItem[] = [
   { label: 'Preferences', icon: 'settings-outline', route: '/preferences' },
 ];
 
-export function DrawerContent({ userId }: DrawerContentProps) {
+export function DrawerContent() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const { userId } = useUser();
 
   const isActive = (route: string) => {
     if (route === '/') return pathname === '/' || pathname.startsWith('/chat');
@@ -100,4 +98,3 @@ export function DrawerContent({ userId }: DrawerContentProps) {
     </View>
   );
 }
-

@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { View, Text, FlatList, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '@/services/api';
-import { storage } from '@/services/storage';
+import { useUser } from '@/contexts/UserContext';
 import type { ChatMessage } from '@/types';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageBubble } from '@/components/chat/MessageBubble';
@@ -14,15 +14,11 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
+  const { userId } = useUser();
 
-  const [userId, setUserId] = useState<string>('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    storage.getOrCreateUserId().then(setUserId);
-  }, []);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, FlatList, Keyboard } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api } from '@/services/api';
-import { storage } from '@/services/storage';
+import { useUser } from '@/contexts/UserContext';
 import type { ChatMessage } from '@/types';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageBubble } from '@/components/chat/MessageBubble';
@@ -13,15 +13,11 @@ export default function ChatDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
+  const { userId } = useUser();
 
-  const [userId, setUserId] = useState<string>('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    storage.getOrCreateUserId().then(setUserId);
-  }, []);
 
   useEffect(() => {
     if (id) {
