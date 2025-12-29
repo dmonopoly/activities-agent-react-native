@@ -2,3 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Remove default focus outline from form elements on web */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+}
+
+/* Add pink focus ring to inputs/textareas with rounded corners */
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.3) !important;
+}
+
+/* Focus-within for chat input wrapper - applies to rounded container */
+.chat-input-wrapper:focus-within {
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.3) !important;
+}
+
+/* Hide focus ring on textarea inside chat wrapper (let wrapper handle it) */
+.chat-input-wrapper textarea:focus {
+  box-shadow: none !important;
+}
+
+/* Focus-within for picker wrapper (preferences page) */
+.picker-wrapper:focus-within {
+  border-color: rgb(251, 113, 133) !important;
+  border-width: 2px !important;
+}
+

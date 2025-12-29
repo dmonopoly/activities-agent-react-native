@@ -108,12 +108,22 @@ export default function PreferencesScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View className="p-4">
-        {/* User Selector */}
+        {/* Page Header */}
         <View className="mb-6">
-          <Text className="text-base font-semibold text-gray-900 mb-2">
-            Select User
+          <Text className="text-2xl font-bold text-gray-900 mb-1">
+            Your Preferences
           </Text>
-          <View className="border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
+          <Text className="text-base text-gray-500">
+            Help us find the ideal activities for you!
+          </Text>
+        </View>
+
+        {/* User Selector Card */}
+        <View className="mb-6 bg-rose-50 border border-rose-100 rounded-xl p-4">
+          <Text className="text-sm font-semibold text-rose-900 mb-2">
+            Select User Profile
+          </Text>
+          <View className="picker-wrapper border border-rose-200 rounded-xl bg-white overflow-hidden">
             <Picker
               selectedValue={userId}
               onValueChange={handleUserChange}
@@ -127,6 +137,9 @@ export default function PreferencesScreen() {
               ))}
             </Picker>
           </View>
+          <Text className="text-xs text-rose-600 mt-2">
+            Switching users will load their saved preferences
+          </Text>
         </View>
 
         {isLoadingPrefs ? (

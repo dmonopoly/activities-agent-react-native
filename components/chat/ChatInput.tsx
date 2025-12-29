@@ -40,7 +40,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
         className="bg-white border-t border-gray-200 px-4 py-3"
         style={{ paddingBottom: Math.max(insets.bottom, 12) }}
       >
-        <View className="flex-row items-end bg-gray-100 rounded-3xl px-4 py-2">
+        <View className="chat-input-wrapper flex-row items-end bg-gray-100 rounded-3xl px-4 py-2">
           <TextInput
             ref={inputRef}
             value={text}
@@ -52,7 +52,9 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
             maxLength={2000}
             editable={!disabled}
             className="flex-1 text-base text-gray-900 max-h-32 py-1"
-            style={{ textAlignVertical: 'center' }}
+            style={{
+              textAlignVertical: 'center',
+            }}
           />
           
           {text.trim().length > 0 && (
