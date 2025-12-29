@@ -40,7 +40,7 @@ bun install
 ### 2. Create Placeholder Assets (if not present)
 
 ```bash
-python3 scripts/create-assets.py
+node scripts/create-assets.js
 ```
 
 ### 3. Start the Development Server
