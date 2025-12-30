@@ -17,10 +17,10 @@ export default function RootLayout() {
             headerStyle: {
               backgroundColor: colors.white,
             },
-            headerTintColor: colors.rose500,
+            headerTintColor: colors.roseMain,
             headerTitleStyle: {
               fontWeight: '600',
-              color: colors.gray900,
+              color: colors.roseMain,
             },
             headerShadowVisible: true,
             drawerStyle: {

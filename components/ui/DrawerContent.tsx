@@ -36,7 +36,7 @@ export function DrawerContent() {
         {/* Header */}
         <View className="px-6 pb-6 border-b border-gray-200">
           <Pressable onPress={() => router.push('/')}>
-            <Text className="text-2xl font-bold text-rose-500">
+            <Text className="text-2xl font-bold" style={{ color: colors.roseMain }}>
               Activities Agent
             </Text>
           </Pressable>

@@ -92,21 +92,6 @@ export default function HistoryScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      {/* Header Actions */}
-      {histories.length > 0 && (
-        <View className="bg-white border-b border-gray-200 px-4 py-3">
-          <Pressable
-            onPress={() => setShowClearAllConfirm(true)}
-            className="flex-row items-center justify-center py-2 active:opacity-70"
-          >
-            <Ionicons name="trash-outline" size={16} color={colors.red500} />
-            <Text className="text-red-500 text-sm font-medium ml-1">
-              Clear All History
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
       <FlatList
         data={histories}
         keyExtractor={(item) => item.id}
@@ -123,6 +108,21 @@ export default function HistoryScreen() {
           paddingBottom: insets.bottom + 16,
           flexGrow: 1,
         }}
+        ListFooterComponent={
+          histories.length > 0 ? (
+            <View className="mt-4 pt-4 border-t border-gray-200">
+              <Pressable
+                onPress={() => setShowClearAllConfirm(true)}
+                className="flex-row items-center justify-center py-2 active:opacity-70"
+              >
+                <Ionicons name="trash-outline" size={14} color={colors.gray500} />
+                <Text className="text-gray-500 text-xs ml-1">
+                  Clear All History
+                </Text>
+              </Pressable>
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
