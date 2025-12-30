@@ -1,20 +1,23 @@
-import { useState, useRef, useCallback } from 'react';
-import { View, Text, FlatList, Keyboard } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { api } from '@/services/api';
-import { useUser } from '@/contexts/UserContext';
-import type { ChatMessage } from '@/types';
-import { ChatInput } from '@/components/chat/ChatInput';
-import { MessageBubble } from '@/components/chat/MessageBubble';
-import { SuggestionChips } from '@/components/chat/SuggestionChips';
-import { TypingIndicator } from '@/components/chat/TypingIndicator';
+import { useCallback, useRef, useState } from "react";
+import { FlatList, Keyboard, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+
+import { ChatInput } from "@/components/chat/ChatInput";
+import { MessageBubble } from "@/components/chat/MessageBubble";
+import { SuggestionChips } from "@/components/chat/SuggestionChips";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useUser } from "@/contexts/UserContext";
+import { api } from "@/services/api";
+import type { ChatMessage } from "@/types";
 
 export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const { userId } = useUser();
+  const { colors: themeColors } = useTheme();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [historyId, setHistoryId] = useState<string | null>(null);
@@ -36,7 +39,7 @@ export default function ChatScreen() {
           router.replace(`/chat/${result.id}`);
         }
       } catch (error) {
-        console.error('Failed to save chat history:', error);
+        console.error("Failed to save chat history:", error);
       }
     },
     [historyId, router]
@@ -48,7 +51,7 @@ export default function ChatScreen() {
 
       Keyboard.dismiss();
 
-      const userMessage: ChatMessage = { role: 'user', content: text };
+      const userMessage: ChatMessage = { role: "user", content: text };
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
       setIsLoading(true);
@@ -57,17 +60,17 @@ export default function ChatScreen() {
       try {
         const response = await api.sendMessage(text, userId);
         const assistantMessage: ChatMessage = {
-          role: 'assistant',
+          role: "assistant",
           content: response.response,
         };
         const finalMessages = [...updatedMessages, assistantMessage];
         setMessages(finalMessages);
         await saveHistory(finalMessages);
       } catch (error) {
-        console.error('Chat error:', error);
+        console.error("Chat error:", error);
         const errorMessage: ChatMessage = {
-          role: 'assistant',
-          content: 'Sorry, something went wrong. Please try again.',
+          role: "assistant",
+          content: "Sorry, something went wrong. Please try again.",
         };
         setMessages([...updatedMessages, errorMessage]);
       } finally {
@@ -88,15 +91,24 @@ export default function ChatScreen() {
   const hasMessages = messages.length > 0;
 
   return (
-    <View className="flex-1 bg-white">
+    <View
+      className="flex-1"
+      style={{ backgroundColor: themeColors.background }}
+    >
       {!hasMessages ? (
         // Empty state - centered content
         <View className="flex-1 justify-center px-4">
-          <View className="items-center mb-8">
-            <Text className="text-3xl font-bold text-gray-900 text-center mb-2">
+          <View className="mb-8 items-center">
+            <Text
+              className="mb-2 text-center text-3xl font-bold"
+              style={{ color: themeColors.text }}
+            >
               What can I help with?
             </Text>
-            <Text className="text-base text-gray-500 text-center">
+            <Text
+              className="text-center text-base"
+              style={{ color: themeColors.textSecondary }}
+            >
               Ask me about activities, events, and things to do
             </Text>
           </View>
@@ -127,4 +139,3 @@ export default function ChatScreen() {
     </View>
   );
 }
-

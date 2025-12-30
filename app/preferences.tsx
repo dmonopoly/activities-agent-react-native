@@ -1,36 +1,39 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from "react";
 import {
-  View,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
   Text,
   TextInput,
-  ScrollView,
-  Pressable,
-  Platform,
-  Alert,
-} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { api } from '@/services/api';
-import { useUser } from '@/contexts/UserContext';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { InterestChip } from '@/components/preferences/InterestChip';
-import { colors } from '@/constants/colors';
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
+
+import { InterestChip } from "@/components/preferences/InterestChip";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { colors } from "@/constants/colors";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useUser } from "@/contexts/UserContext";
+import { api } from "@/services/api";
 
 export default function PreferencesScreen() {
   const insets = useSafeAreaInsets();
   const { userId, allUsers, isLoading: isUserLoading, setUserId } = useUser();
+  const { colors: themeColors, isDark } = useTheme();
 
   const [isLoadingPrefs, setIsLoadingPrefs] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Preferences form
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
-  const [newInterest, setNewInterest] = useState('');
-  const [budgetMin, setBudgetMin] = useState('');
-  const [budgetMax, setBudgetMax] = useState('');
+  const [newInterest, setNewInterest] = useState("");
+  const [budgetMin, setBudgetMin] = useState("");
+  const [budgetMax, setBudgetMax] = useState("");
 
   // Load preferences when userId changes
   useEffect(() => {
@@ -43,26 +46,29 @@ export default function PreferencesScreen() {
     try {
       setIsLoadingPrefs(true);
       const prefs = await api.getPreferences(id);
-      setLocation(prefs.location || '');
+      setLocation(prefs.location || "");
       setInterests(prefs.interests || []);
-      setBudgetMin(prefs.budget_min?.toString() || '');
-      setBudgetMax(prefs.budget_max?.toString() || '');
+      setBudgetMin(prefs.budget_min?.toString() || "");
+      setBudgetMax(prefs.budget_max?.toString() || "");
     } catch (error) {
-      console.error('Failed to load preferences:', error);
+      console.error("Failed to load preferences:", error);
     } finally {
       setIsLoadingPrefs(false);
     }
   };
 
-  const handleUserChange = useCallback(async (newUserId: string) => {
-    await setUserId(newUserId);
-  }, [setUserId]);
+  const handleUserChange = useCallback(
+    async (newUserId: string) => {
+      await setUserId(newUserId);
+    },
+    [setUserId]
+  );
 
   const handleAddInterest = useCallback(() => {
     const trimmed = newInterest.trim();
     if (trimmed && !interests.includes(trimmed)) {
       setInterests([...interests, trimmed]);
-      setNewInterest('');
+      setNewInterest("");
     }
   }, [newInterest, interests]);
 
@@ -90,8 +96,8 @@ export default function PreferencesScreen() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch (error) {
-      console.error('Failed to save preferences:', error);
-      Alert.alert('Error', 'Failed to save preferences. Please try again.');
+      console.error("Failed to save preferences:", error);
+      Alert.alert("Error", "Failed to save preferences. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -103,41 +109,73 @@ export default function PreferencesScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-white"
+      className="flex-1"
+      style={{ backgroundColor: themeColors.background }}
       contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       keyboardShouldPersistTaps="handled"
     >
       <View className="p-4">
         {/* Page Header */}
         <View className="mb-6">
-          <Text className="text-2xl font-bold text-gray-900 mb-1">
+          <Text
+            className="mb-1 text-2xl font-bold"
+            style={{ color: themeColors.text }}
+          >
             Your Preferences
           </Text>
-          <Text className="text-base text-gray-500">
+          <Text
+            className="text-base"
+            style={{ color: themeColors.textSecondary }}
+          >
             Help us find the ideal activities for you!
           </Text>
         </View>
 
         {/* User Selector Card */}
-        <View className="mb-6 bg-rose-50 border border-rose-100 rounded-xl p-4">
-          <Text className="text-sm font-semibold text-rose-900 mb-2">
+        <View
+          className="mb-6 rounded-xl p-4"
+          style={{
+            backgroundColor: themeColors.primaryLight,
+            borderWidth: 1,
+            borderColor: themeColors.primaryBorder,
+          }}
+        >
+          <Text
+            className="mb-2 text-sm font-semibold"
+            style={{ color: isDark ? colors.rose200 : colors.rose700 }}
+          >
             Select User Profile
           </Text>
-          <View className="picker-wrapper border border-rose-200 rounded-xl bg-white overflow-hidden">
+          <View
+            className="picker-wrapper overflow-hidden rounded-xl"
+            style={{
+              backgroundColor: themeColors.inputBackground,
+              borderWidth: 1,
+              borderColor: themeColors.primaryBorder,
+            }}
+          >
             <Picker
               selectedValue={userId}
               onValueChange={handleUserChange}
               style={{
-                height: Platform.OS === 'ios' ? 150 : 50,
-                color: colors.gray900,
+                height: Platform.OS === "ios" ? 150 : 50,
+                color: themeColors.text,
+                backgroundColor: themeColors.inputBackground,
               }}
+              dropdownIconColor={themeColors.text}
             >
               {allUsers.map((user) => (
-                <Picker.Item key={user} label={user} value={user} />
+                <Picker.Item
+                  key={user}
+                  label={user}
+                  value={user}
+                  color={isDark ? themeColors.text : colors.gray900}
+                  style={{ backgroundColor: themeColors.inputBackground }}
+                />
               ))}
             </Picker>
           </View>
-          <Text className="text-xs text-rose-600 mt-2">
+          <Text className="mt-2 text-xs" style={{ color: colors.rose500 }}>
             Switching users will load their saved preferences
           </Text>
         </View>
@@ -150,27 +188,39 @@ export default function PreferencesScreen() {
           <>
             {/* Location */}
             <View className="mb-6">
-              <Text className="text-base font-semibold text-gray-900 mb-2">
+              <Text
+                className="mb-2 text-base font-semibold"
+                style={{ color: themeColors.text }}
+              >
                 Location
               </Text>
               <TextInput
                 value={location}
                 onChangeText={setLocation}
                 placeholder="e.g., San Francisco, CA"
-                placeholderTextColor={colors.gray400}
-                className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+                placeholderTextColor={themeColors.inputPlaceholder}
+                className="rounded-xl px-4 py-3 text-base"
+                style={{
+                  backgroundColor: themeColors.inputBackground,
+                  borderWidth: 1,
+                  borderColor: themeColors.inputBorder,
+                  color: themeColors.inputText,
+                }}
               />
             </View>
 
             {/* Interests */}
             <View className="mb-6">
-              <Text className="text-base font-semibold text-gray-900 mb-2">
+              <Text
+                className="mb-2 text-base font-semibold"
+                style={{ color: themeColors.text }}
+              >
                 Interests
               </Text>
 
               {/* Interest Chips */}
               {interests.length > 0 && (
-                <View className="flex-row flex-wrap mb-3">
+                <View className="mb-3 flex-row flex-wrap">
                   {interests.map((interest, index) => (
                     <InterestChip
                       key={index}
@@ -188,12 +238,18 @@ export default function PreferencesScreen() {
                   onChangeText={setNewInterest}
                   onSubmitEditing={handleAddInterest}
                   placeholder="Add an interest..."
-                  placeholderTextColor={colors.gray400}
-                  className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+                  placeholderTextColor={themeColors.inputPlaceholder}
+                  className="flex-1 rounded-xl px-4 py-3 text-base"
+                  style={{
+                    backgroundColor: themeColors.inputBackground,
+                    borderWidth: 1,
+                    borderColor: themeColors.inputBorder,
+                    color: themeColors.inputText,
+                  }}
                 />
                 <Pressable
                   onPress={handleAddInterest}
-                  className="bg-rose-500 rounded-xl px-4 items-center justify-center active:bg-rose-600"
+                  className="items-center justify-center rounded-xl bg-rose-500 px-4 active:bg-rose-600"
                 >
                   <Ionicons name="add" size={24} color={colors.white} />
                 </Pressable>
@@ -202,30 +258,55 @@ export default function PreferencesScreen() {
 
             {/* Budget */}
             <View className="mb-8">
-              <Text className="text-base font-semibold text-gray-900 mb-2">
+              <Text
+                className="mb-2 text-base font-semibold"
+                style={{ color: themeColors.text }}
+              >
                 Budget Range
               </Text>
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-xs text-gray-500 mb-1">Minimum ($)</Text>
+                  <Text
+                    className="mb-1 text-xs"
+                    style={{ color: themeColors.textSecondary }}
+                  >
+                    Minimum ($)
+                  </Text>
                   <TextInput
                     value={budgetMin}
                     onChangeText={setBudgetMin}
                     placeholder="0"
-                    placeholderTextColor={colors.gray400}
+                    placeholderTextColor={themeColors.inputPlaceholder}
                     keyboardType="numeric"
-                    className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+                    className="rounded-xl px-4 py-3 text-base"
+                    style={{
+                      backgroundColor: themeColors.inputBackground,
+                      borderWidth: 1,
+                      borderColor: themeColors.inputBorder,
+                      color: themeColors.inputText,
+                    }}
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs text-gray-500 mb-1">Maximum ($)</Text>
+                  <Text
+                    className="mb-1 text-xs"
+                    style={{ color: themeColors.textSecondary }}
+                  >
+                    Maximum ($)
+                  </Text>
                   <TextInput
                     value={budgetMax}
                     onChangeText={setBudgetMax}
                     placeholder="100"
-                    placeholderTextColor={colors.gray400}
+                    placeholderTextColor={themeColors.inputPlaceholder}
                     keyboardType="numeric"
-                    className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50"
+                    className="rounded-xl px-4 py-3 text-base"
+                    style={{
+                      backgroundColor: themeColors.inputBackground,
+                      borderWidth: 1,
+                      borderColor: themeColors.inputBorder,
+                      color: themeColors.inputText,
+                    }}
                   />
                 </View>
               </View>
@@ -235,24 +316,28 @@ export default function PreferencesScreen() {
             <Pressable
               onPress={handleSave}
               disabled={isSaving}
-              className={`rounded-xl py-4 items-center ${
+              className={`items-center rounded-xl py-4 ${
                 saveSuccess
-                  ? 'bg-green-500'
+                  ? "bg-green-500"
                   : isSaving
-                  ? 'bg-gray-300'
-                  : 'bg-rose-500 active:bg-rose-600'
+                    ? "bg-gray-300"
+                    : "bg-rose-500 active:bg-rose-600"
               }`}
             >
               {saveSuccess ? (
                 <View className="flex-row items-center">
-                  <Ionicons name="checkmark-circle" size={20} color={colors.white} />
-                  <Text className="text-white font-semibold text-base ml-2">
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.white}
+                  />
+                  <Text className="ml-2 text-base font-semibold text-white">
                     Saved!
                   </Text>
                 </View>
               ) : (
-                <Text className="text-white font-semibold text-base">
-                  {isSaving ? 'Saving...' : 'Save Preferences'}
+                <Text className="text-base font-semibold text-white">
+                  {isSaving ? "Saving..." : "Save Preferences"}
                 </Text>
               )}
             </Pressable>

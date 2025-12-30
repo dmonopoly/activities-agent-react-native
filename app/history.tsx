@@ -1,18 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Pressable, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { api } from '@/services/api';
-import type { ChatHistoryListItem } from '@/types';
-import { HistoryItem } from '@/components/history/HistoryItem';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { ConfirmModal } from '@/components/ui/ConfirmModal';
-import { colors } from '@/constants/colors';
+import { useCallback, useEffect, useState } from "react";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+
+import { HistoryItem } from "@/components/history/HistoryItem";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { colors } from "@/constants/colors";
+import { useTheme } from "@/contexts/ThemeContext";
+import { api } from "@/services/api";
+import type { ChatHistoryListItem } from "@/types";
 
 export default function HistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors: themeColors } = useTheme();
 
   const [histories, setHistories] = useState<ChatHistoryListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +34,7 @@ export default function HistoryScreen() {
       const data = await api.getChatHistories();
       setHistories(data);
     } catch (error) {
-      console.error('Failed to load histories:', error);
+      console.error("Failed to load histories:", error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -67,7 +70,7 @@ export default function HistoryScreen() {
       await api.deleteChatHistory(historyToDelete);
       setHistories((prev) => prev.filter((h) => h.id !== historyToDelete));
     } catch (error) {
-      console.error('Failed to delete history:', error);
+      console.error("Failed to delete history:", error);
     } finally {
       setDeletingId(null);
       setShowDeleteConfirm(false);
@@ -80,7 +83,7 @@ export default function HistoryScreen() {
       await api.clearAllChatHistory();
       setHistories([]);
     } catch (error) {
-      console.error('Failed to clear all histories:', error);
+      console.error("Failed to clear all histories:", error);
     } finally {
       setShowClearAllConfirm(false);
     }
@@ -91,7 +94,10 @@ export default function HistoryScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View
+      className="flex-1"
+      style={{ backgroundColor: themeColors.backgroundSecondary }}
+    >
       <FlatList
         data={histories}
         keyExtractor={(item) => item.id}
@@ -110,13 +116,23 @@ export default function HistoryScreen() {
         }}
         ListFooterComponent={
           histories.length > 0 ? (
-            <View className="mt-4 pt-4 border-t border-gray-200">
+            <View
+              className="mt-4 pt-4"
+              style={{ borderTopWidth: 1, borderTopColor: themeColors.border }}
+            >
               <Pressable
                 onPress={() => setShowClearAllConfirm(true)}
                 className="flex-row items-center justify-center py-2 active:opacity-70"
               >
-                <Ionicons name="trash-outline" size={14} color={colors.gray500} />
-                <Text className="text-gray-500 text-xs ml-1">
+                <Ionicons
+                  name="trash-outline"
+                  size={14}
+                  color={themeColors.textMuted}
+                />
+                <Text
+                  className="ml-1 text-xs"
+                  style={{ color: themeColors.textMuted }}
+                >
                   Clear All History
                 </Text>
               </Pressable>
@@ -133,20 +149,33 @@ export default function HistoryScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center py-20">
-            <View className="w-20 h-20 bg-gray-200 rounded-full items-center justify-center mb-4">
-              <Ionicons name="chatbubbles" size={40} color={colors.gray400} />
+            <View
+              className="mb-4 h-20 w-20 items-center justify-center rounded-full"
+              style={{ backgroundColor: themeColors.border }}
+            >
+              <Ionicons
+                name="chatbubbles"
+                size={40}
+                color={themeColors.textMuted}
+              />
             </View>
-            <Text className="text-lg font-medium text-gray-900 mb-1">
+            <Text
+              className="mb-1 text-lg font-medium"
+              style={{ color: themeColors.text }}
+            >
               No conversations yet
             </Text>
-            <Text className="text-gray-500 text-center mb-6">
+            <Text
+              className="mb-6 text-center"
+              style={{ color: themeColors.textSecondary }}
+            >
               Start a new chat to see your history here
             </Text>
             <Pressable
-              onPress={() => router.push('/')}
-              className="bg-rose-500 rounded-full px-6 py-3 active:bg-rose-600"
+              onPress={() => router.push("/")}
+              className="rounded-full bg-rose-500 px-6 py-3 active:bg-rose-600"
             >
-              <Text className="text-white font-medium">Start New Chat</Text>
+              <Text className="font-medium text-white">Start New Chat</Text>
             </Pressable>
           </View>
         }
@@ -179,4 +208,3 @@ export default function HistoryScreen() {
     </View>
   );
 }
-

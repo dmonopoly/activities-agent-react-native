@@ -1,4 +1,6 @@
-import { View, Text, Modal, Pressable } from 'react-native';
+import { Modal, Pressable, Text, View } from "react-native";
+
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -15,12 +17,14 @@ export function ConfirmModal({
   visible,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   isDestructive = false,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const { colors: themeColors } = useTheme();
+
   return (
     <Modal
       visible={visible}
@@ -28,29 +32,41 @@ export function ConfirmModal({
       animationType="fade"
       onRequestClose={onCancel}
     >
-      <View className="flex-1 bg-black/50 items-center justify-center p-4">
-        <View className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-          <Text className="text-lg font-semibold text-gray-900 mb-2">
+      <View className="flex-1 items-center justify-center bg-black/50 p-4">
+        <View
+          className="w-full max-w-sm rounded-2xl p-6 shadow-xl"
+          style={{ backgroundColor: themeColors.card }}
+        >
+          <Text
+            className="mb-2 text-lg font-semibold"
+            style={{ color: themeColors.text }}
+          >
             {title}
           </Text>
-          <Text className="text-gray-600 mb-6">{message}</Text>
+          <Text className="mb-6" style={{ color: themeColors.textSecondary }}>
+            {message}
+          </Text>
 
           <View className="flex-row justify-end gap-3">
             <Pressable
               onPress={onCancel}
-              className="px-4 py-2 bg-gray-100 rounded-lg active:bg-gray-200"
+              className="rounded-lg px-4 py-2 active:opacity-70"
+              style={{ backgroundColor: themeColors.backgroundSecondary }}
             >
-              <Text className="text-sm font-medium text-gray-700">
+              <Text
+                className="text-sm font-medium"
+                style={{ color: themeColors.text }}
+              >
                 {cancelLabel}
               </Text>
             </Pressable>
 
             <Pressable
               onPress={onConfirm}
-              className={`px-4 py-2 rounded-lg ${
+              className={`rounded-lg px-4 py-2 ${
                 isDestructive
-                  ? 'bg-red-500 active:bg-red-600'
-                  : 'bg-rose-500 active:bg-rose-600'
+                  ? "bg-red-500 active:bg-red-600"
+                  : "bg-rose-500 active:bg-rose-600"
               }`}
             >
               <Text className="text-sm font-medium text-white">
@@ -63,4 +79,3 @@ export function ConfirmModal({
     </Modal>
   );
 }
-

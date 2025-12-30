@@ -2,8 +2,8 @@
  * User ID management utilities.
  */
 
-import { api } from '@/services/api';
-import { storage } from '@/services/storage';
+import { api } from "@/services/api";
+import { storage } from "@/services/storage";
 
 export interface InitUserResult {
   userId: string;
@@ -12,7 +12,7 @@ export interface InitUserResult {
 
 /**
  * Initialize a valid user ID.
- * 
+ *
  * @returns Promise with the valid userId and all available users.
  */
 export async function initializeValidUserId(): Promise<InitUserResult> {
@@ -21,7 +21,7 @@ export async function initializeValidUserId(): Promise<InitUserResult> {
     api.getAllUsers().catch(() => [] as string[]),
   ]);
 
-  let userId = '';
+  let userId = "";
 
   if (storedId && users.includes(storedId)) {
     // Stored ID is valid
@@ -40,4 +40,3 @@ export async function initializeValidUserId(): Promise<InitUserResult> {
 
   return { userId, allUsers: users };
 }
-
