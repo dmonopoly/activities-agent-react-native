@@ -1,6 +1,14 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { initializeValidUserId } from '@/lib/user';
-import { storage } from '@/services/storage';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import { initializeValidUserId } from "@/lib/user";
+import { storage } from "@/services/storage";
 
 interface UserContextType {
   userId: string;
@@ -13,7 +21,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [userId, setUserIdState] = useState<string>('');
+  const [userId, setUserIdState] = useState<string>("");
   const [allUsers, setAllUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,7 +32,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUserIdState(result.userId);
       setAllUsers(result.allUsers);
     } catch (error) {
-      console.error('Failed to load user:', error);
+      console.error("Failed to load user:", error);
     } finally {
       setIsLoading(false);
     }
@@ -57,8 +65,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 }
-

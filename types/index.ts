@@ -1,5 +1,5 @@
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
@@ -39,4 +39,3 @@ export interface UserPreferences {
 export interface UsersResponse {
   users: string[];
 }
-

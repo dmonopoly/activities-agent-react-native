@@ -1,7 +1,9 @@
-import { View, Text, useWindowDimensions } from 'react-native';
-import Markdown from 'react-native-markdown-display';
-import type { ChatMessage } from '@/types';
-import { colors } from '@/constants/colors';
+import { Text, useWindowDimensions, View } from "react-native";
+import Markdown from "react-native-markdown-display";
+
+import { colors } from "@/constants/colors";
+import { useTheme } from "@/contexts/ThemeContext";
+import type { ChatMessage } from "@/types";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -9,40 +11,41 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const { width } = useWindowDimensions();
-  const isUser = message.role === 'user';
+  const { colors: themeColors, isDark } = useTheme();
+  const isUser = message.role === "user";
   const maxWidth = width * 0.8;
 
   const markdownStyles = {
     body: {
-      color: colors.gray900,
+      color: themeColors.assistantBubbleText,
       fontSize: 15,
       lineHeight: 22,
     },
     heading1: {
       fontSize: 18,
-      fontWeight: '700' as const,
+      fontWeight: "700" as const,
       marginBottom: 8,
-      color: colors.gray900,
+      color: themeColors.assistantBubbleText,
     },
     heading2: {
       fontSize: 16,
-      fontWeight: '600' as const,
+      fontWeight: "600" as const,
       marginBottom: 6,
-      color: colors.gray900,
+      color: themeColors.assistantBubbleText,
     },
     heading3: {
       fontSize: 15,
-      fontWeight: '600' as const,
+      fontWeight: "600" as const,
       marginBottom: 4,
-      color: colors.gray700,
+      color: themeColors.textSecondary,
     },
     strong: {
-      fontWeight: '600' as const,
+      fontWeight: "600" as const,
       color: colors.rose600,
     },
     em: {
-      fontStyle: 'italic' as const,
-      color: colors.gray600,
+      fontStyle: "italic" as const,
+      color: themeColors.textSecondary,
     },
     bullet_list: {
       marginVertical: 4,
@@ -58,20 +61,20 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     },
     link: {
       color: colors.rose500,
-      textDecorationLine: 'underline' as const,
+      textDecorationLine: "underline" as const,
     },
     code_inline: {
-      backgroundColor: colors.gray200,
-      color: colors.gray900,
+      backgroundColor: isDark ? colors.gray700 : colors.gray200,
+      color: themeColors.assistantBubbleText,
       paddingHorizontal: 4,
       paddingVertical: 2,
       borderRadius: 4,
-      fontFamily: 'monospace',
+      fontFamily: "monospace",
       fontSize: 13,
     },
     blockquote: {
       borderLeftWidth: 4,
-      borderLeftColor: colors.gray300,
+      borderLeftColor: themeColors.border,
       paddingLeft: 12,
       marginVertical: 8,
     },
@@ -79,12 +82,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
   if (isUser) {
     return (
-      <View className="flex-row justify-end mb-3">
+      <View className="mb-3 flex-row justify-end">
         <View
-          style={{ maxWidth }}
-          className="bg-rose-500 rounded-2xl px-4 py-3"
+          style={{ maxWidth, backgroundColor: themeColors.userBubble }}
+          className="rounded-2xl px-4 py-3"
         >
-          <Text className="text-white text-base leading-relaxed">
+          <Text
+            style={{ color: themeColors.userBubbleText }}
+            className="text-base leading-relaxed"
+          >
             {message.content}
           </Text>
         </View>
@@ -93,11 +99,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   }
 
   return (
-    <View className="flex-row justify-start mb-3">
-      <View style={{ maxWidth }} className="bg-gray-100 rounded-2xl px-4 py-3">
+    <View className="mb-3 flex-row justify-start">
+      <View
+        style={{ maxWidth, backgroundColor: themeColors.assistantBubble }}
+        className="rounded-2xl px-4 py-3"
+      >
         <Markdown style={markdownStyles}>{message.content}</Markdown>
       </View>
     </View>
   );
 }
-

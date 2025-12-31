@@ -1,19 +1,22 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, FlatList, Keyboard } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { api } from '@/services/api';
-import { useUser } from '@/contexts/UserContext';
-import type { ChatMessage } from '@/types';
-import { ChatInput } from '@/components/chat/ChatInput';
-import { MessageBubble } from '@/components/chat/MessageBubble';
-import { TypingIndicator } from '@/components/chat/TypingIndicator';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FlatList, Keyboard, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+
+import { ChatInput } from "@/components/chat/ChatInput";
+import { MessageBubble } from "@/components/chat/MessageBubble";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useUser } from "@/contexts/UserContext";
+import { api } from "@/services/api";
+import type { ChatMessage } from "@/types";
 
 export default function ChatDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
   const { userId } = useUser();
+  const { colors: themeColors } = useTheme();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -31,9 +34,9 @@ export default function ChatDetailScreen() {
       const history = await api.getChatHistory(id!);
       setMessages(history.messages);
     } catch (error) {
-      console.error('Failed to load chat history:', error);
+      console.error("Failed to load chat history:", error);
       // Navigate back to home if history not found
-      router.replace('/');
+      router.replace("/");
     } finally {
       setIsLoadingHistory(false);
     }
@@ -50,7 +53,7 @@ export default function ChatDetailScreen() {
       try {
         await api.saveChatHistory(id!, newMessages);
       } catch (error) {
-        console.error('Failed to save chat history:', error);
+        console.error("Failed to save chat history:", error);
       }
     },
     [id]
@@ -62,7 +65,7 @@ export default function ChatDetailScreen() {
 
       Keyboard.dismiss();
 
-      const userMessage: ChatMessage = { role: 'user', content: text };
+      const userMessage: ChatMessage = { role: "user", content: text };
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
       setIsLoading(true);
@@ -71,17 +74,17 @@ export default function ChatDetailScreen() {
       try {
         const response = await api.sendMessage(text, userId);
         const assistantMessage: ChatMessage = {
-          role: 'assistant',
+          role: "assistant",
           content: response.response,
         };
         const finalMessages = [...updatedMessages, assistantMessage];
         setMessages(finalMessages);
         await saveHistory(finalMessages);
       } catch (error) {
-        console.error('Chat error:', error);
+        console.error("Chat error:", error);
         const errorMessage: ChatMessage = {
-          role: 'assistant',
-          content: 'Sorry, something went wrong. Please try again.',
+          role: "assistant",
+          content: "Sorry, something went wrong. Please try again.",
         };
         setMessages([...updatedMessages, errorMessage]);
       } finally {
@@ -97,7 +100,10 @@ export default function ChatDetailScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View
+      className="flex-1"
+      style={{ backgroundColor: themeColors.background }}
+    >
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -112,7 +118,9 @@ export default function ChatDetailScreen() {
         ListFooterComponent={isLoading ? <TypingIndicator /> : null}
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center py-20">
-            <Text className="text-gray-400">No messages yet</Text>
+            <Text style={{ color: themeColors.textMuted }}>
+              No messages yet
+            </Text>
           </View>
         }
       />
@@ -120,4 +128,3 @@ export default function ChatDetailScreen() {
     </View>
   );
 }
-

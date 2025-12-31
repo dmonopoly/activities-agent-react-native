@@ -1,15 +1,19 @@
-import { useEffect } from 'react';
-import { View } from 'react-native';
+import { useEffect } from "react";
+import { View } from "react-native";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
+  withDelay,
   withRepeat,
   withSequence,
-  withDelay,
   withTiming,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
+
+import { colors } from "@/constants/colors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function TypingIndicator() {
+  const { colors: themeColors } = useTheme();
   const dot1 = useSharedValue(0);
   const dot2 = useSharedValue(0);
   const dot3 = useSharedValue(0);
@@ -45,23 +49,23 @@ export function TypingIndicator() {
     transform: [{ translateY: dot3.value }],
   }));
 
+  const dotStyle = {
+    backgroundColor: colors.gray400,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  };
+
   return (
     <View className="flex-row items-center justify-start">
-      <View className="bg-gray-100 rounded-2xl px-4 py-3 flex-row items-center gap-1">
-        <Animated.View
-          style={animatedStyle1}
-          className="w-2 h-2 bg-gray-400 rounded-full"
-        />
-        <Animated.View
-          style={animatedStyle2}
-          className="w-2 h-2 bg-gray-400 rounded-full"
-        />
-        <Animated.View
-          style={animatedStyle3}
-          className="w-2 h-2 bg-gray-400 rounded-full"
-        />
+      <View
+        className="flex-row items-center gap-1 rounded-2xl px-4 py-3"
+        style={{ backgroundColor: themeColors.assistantBubble }}
+      >
+        <Animated.View style={[animatedStyle1, dotStyle]} />
+        <Animated.View style={[animatedStyle2, dotStyle]} />
+        <Animated.View style={[animatedStyle3, dotStyle]} />
       </View>
     </View>
   );
 }
-

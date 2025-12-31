@@ -34,4 +34,3 @@ convert -size 48x48 xc:#F43F5E -fill white -pointsize 20 \
 ```
 
 Or download Expo's default assets and customize them.
-
